@@ -1,39 +1,32 @@
 public class Tester {
     public static void main(String[] args) {
-        System.out.println("=============================================");
-        System.out.println("   🚀 SMART CANTEEN - ADMIN CONTROL TEST");
-        System.out.println("=============================================\n");
-
+        // System.out.println("Initial Data.....\n");
         Canteen kmitl = new Canteen("C01", "KMITL Smart Canteen");
-        Admin admin = new Admin("U999", "Admin Boss", "admin@mail.com", "pass123", "A001", kmitl);
-        Customer cus1 = new Customer("U001", "Bonus", "bonus@mail.com", "1234", "C001", kmitl, null);
-        
-        System.out.println("--- [Admin Action] ---");
-        Table t05 = new Table("05", 4, kmitl);
-        admin.addTable(t05);
-        admin.updateTable("05", 10); 
 
-        // --- PHASE 2: CUSTOMER RESERVATION ---
-        System.out.println( "\n--- [Customer Action] ---");
-        System.out.println("Bonus is reserving Table 05 (Now 10 seats)...");
-        cus1.makeReservation("05");
+        Admin admin = new Admin("U999", "Boss", "admin@mail.com", "pass123", "A001", kmitl);
+        DatabaseManager.insertAdmin(admin);
 
+        Customer cus1 = new Customer("U001", "Bonus", "bonus@mail.com", "1234", "C001", kmitl);
+        DatabaseManager.insertCustomer(cus1);        
 
-        // --- PHASE 3: CHECKOUT & FEEDBACK ---
-        System.out.println("\n--- [Process Checkout] ---");
-        if (cus1.getReservation() != null) {
-            // ให้ Feedback
-            cus1.getReservation().addFeedback(cus1, 5, "โต๊ะใหญ่ขึ้นเยอะเลยครับ ขอบคุณแอดมิน!");
-            // คืนโต๊ะ
-            cus1.checkOut();
+        System.out.println("\nAdmin");
+        Table t01 = new Table("01", 4, kmitl);
+        admin.addTable(t01);
+        admin.updateTable("01", 10); 
+
+        System.out.println("\nCustomer reserve the seat");
+        kmitl.makeReservation(cus1, "01");
+        cus1.activateReservation();
+
+        System.out.println("\nFeedback and Checkout");
+        if (cus1.getReservation() != null && cus1.getReservation().getStatus() == Status.OCCUPIED) {
+            cus1.getReservation().addFeedback(cus1, 5, "This table is so dirty");
+            cus1.checkout();
         }
 
-        // --- PHASE 4: VIEW RESULTS ---
-        System.out.println("\n--- [Admin Review] ---");
         admin.viewAllFeedback();
-
-        System.out.println("=============================================");
-        System.out.println("   🎉 SECURE TEST COMPLETED!");
-        System.out.println("=============================================");
+        
+        Report report = new Report(admin, kmitl);
+        report.printReport();
     }
 }

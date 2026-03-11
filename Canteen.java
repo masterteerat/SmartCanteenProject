@@ -29,9 +29,10 @@ public class Canteen {
             target.addReservation(c, resID);
             DatabaseManager.insertReservation(resID, c.getCustomerID(), tableID);
             DatabaseManager.updateTableStatus(tableID, "OCCUPIED");
+            System.out.println("Reserve Table " + tableID + " success");
             return true;
         }
-        System.out.println("[Canteen] Table " + tableID + " is not available.");
+        System.out.println("Table " + tableID + " is not available.");
         return false;
     }
 
@@ -41,16 +42,15 @@ public class Canteen {
             target.setStatus(Status.AVAILABLE);
             target.setReservation(null);
             DatabaseManager.updateTableStatus(tableID, "AVAILABLE");
-            System.out.println("[Canteen] Table " + tableID + " released.");
+            System.out.println("Table " + tableID + " released.");
             return true;
         }
-        System.out.println("[Canteen Error] Cannot release Table " + tableID + ".");
+        System.out.println("Cannot release Table " + tableID + ".");
         return false;
     }
 
     public boolean addTable(Table tab) { return tableList.add(tab); }
     public boolean removeTable(Table tab) { return tableList.remove(tab); }
-
     public String getCanteenID() { return canteenID; }
     public void setCanteenID(String canteenID) { this.canteenID = canteenID; }
     public String getCanteenName() { return canteenName; }
