@@ -1,15 +1,28 @@
+import java.util.List;
+
 public class Reservation {
     private String reservationID;
-    private String status;
-    private Table table;
+    private Status status;
+    private List<Customer> occupant;
     private Customer owner;
+    private Table table;
+    private Feedback feedback;
 
-    public Reservation(String resID, String status, Table tab, Customer own) {
+    public Reservation(String resID, Customer owner, Table tab) {
         this.reservationID = resID;
-        this.status = status;
+        this.status = Status.RESERVED;
         this.table = tab;
-        this.owner = own;
-        this.owner.addReservation(this);
+        this.owner = owner;
+    }
+
+    public boolean activateReservation() {
+        status = Status.OCCUPIED;
+        return true;
+    }
+
+    public boolean addFeedbaack(Customer owner, int score, String comment) {
+        feedback = new Feedback(owner, score, comment, this);
+        return true;
     }
 
     public String getReservationID() {
@@ -20,20 +33,20 @@ public class Reservation {
         this.reservationID = reservationID;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
-    public Table getTable() {
-        return table;
+    public List<Customer> getOccupant() {
+        return occupant;
     }
 
-    public void setTable(Table table) {
-        this.table = table;
+    public void setOccupant(List<Customer> occupant) {
+        this.occupant = occupant;
     }
 
     public Customer getOwner() {
@@ -44,6 +57,15 @@ public class Reservation {
         this.owner = owner;
     }
 
-    
+    public Table getTable() {
+        return table;
+    }
 
+    public void setTable(Table table) {
+        this.table = table;
+    }
+
+    public Feedback getFeedback() {
+        return feedback;
+    }
 }

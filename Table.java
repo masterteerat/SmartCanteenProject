@@ -1,22 +1,26 @@
 public class Table {
     private String TableID;
-    private String status;
     private int capacity;
+    private Status status;
+    private Canteen canteen;
+    private Reservation reservation;
 
-    public Table(String TableID, int capacity){
+    public Table(String TableID, int capacity, Canteen canteen) {
         this.TableID = TableID;
         this.capacity = capacity;
-        status = "Available";
+        status = Status.AVAILABLE;
     }
 
-    public Reservation addReservation(Customer owner) {
-        Reservation res = new Reservation("RES01", "Reserved", this, owner);
-        return res;
-    }
-
-    public Boolean checkAvailability(){
-        if (!status.equals("Available")) return false;
+    public boolean addReservation(Customer owner, String resID) {
+        Reservation res = new Reservation(resID, owner, this);
+        reservation = res;
+        status = Status.OCCUPIED;
+        owner.setReservation(res);
         return true;
+    }
+
+    public Boolean checkAvailability() {
+        return status == Status.AVAILABLE;
     }
 
     public String getTableID() {
@@ -27,14 +31,6 @@ public class Table {
         TableID = tableID;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public int getCapacity() {
         return capacity;
     }
@@ -43,5 +39,27 @@ public class Table {
         this.capacity = capacity;
     }
 
-    
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Canteen getCanteen() {
+        return canteen;
+    }
+
+    public void setCanteen(Canteen canteen) {
+        this.canteen = canteen;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
 }
