@@ -39,6 +39,11 @@ public class Customer extends User {
         return released;
     }
 
+    public boolean addFeedback(Customer owner, int score, String comment) {
+        if (reservation.addFeedback(owner, score, comment)) return true;
+        return false;
+    }
+
     public String getCustomerID() { return customerID; }
     public void setCustomerID(String customerID) { this.customerID = customerID; }
     public Canteen getCanteen() { return canteen; }

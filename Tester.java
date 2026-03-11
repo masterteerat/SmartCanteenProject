@@ -7,20 +7,15 @@ public class Tester {
         Canteen kmitl = new Canteen("C01", "KMITL Smart Canteen");
         Admin admin = new Admin("U999", "Admin Boss", "admin@mail.com", "pass123", "A001", kmitl);
         Customer cus1 = new Customer("U001", "Bonus", "bonus@mail.com", "1234", "C001", kmitl, null);
-
-        // --- PHASE 1: ADMIN MANAGEMENT ---
+        
         System.out.println("--- [Admin Action] ---");
-        // เพิ่มโต๊ะใหม่ (สมมติเป็นโต๊ะ 05 จุ 4 คน)
         Table t05 = new Table("05", 4, kmitl);
         admin.addTable(t05);
-
-        // แอดมินสั่งอัปเดตความจุโต๊ะ 05 เป็น 10 คน ผ่าน ID โดยตรง
-        // ไม่ต้องไปสั่ง t05.setCapacity เองข้างนอกแล้ว
         admin.updateTable("05", 10); 
 
 
         // --- PHASE 2: CUSTOMER RESERVATION ---
-        System.out.println("\n--- [Customer Action] ---");
+        System.out.println( "\n--- [Customer Action] ---");
         System.out.println("Bonus is reserving Table 05 (Now 10 seats)...");
         cus1.makeReservation("05");
 
