@@ -11,96 +11,54 @@ public class Canteen {
     public Canteen(String canteenID, String name) {
         this.canteenID = canteenID;
         this.canteenName = name;
-        tableList = new ArrayList<>();
-
+        this.tableList = new ArrayList<>();
         DatabaseManager.initializeDB();
-        initializeData();
-    }
-
-    public void initializeData() {
         this.tableList = DatabaseManager.loadTablesFromDB(this);
     }
 
-    public void makeReservation(Customer c, String tableID){
-        Table targetTable = tableList.stream()
+    private Table findTable(String tableID) {
+        return tableList.stream()
             .filter(t -> t.getTableID().equals(tableID))
-            .findFirst()
-            .orElse(null);
+            .findFirst().orElse(null);
+    }
 
-        if (targetTable != null && targetTable.checkAvailability()) {
+    public boolean makeReservation(Customer c, String tableID) {
+        Table target = findTable(tableID);
+        if (target != null && target.checkAvailability()) {
             String resID = "RES" + System.currentTimeMillis();
-            targetTable.addReservation(c, resID);
-
+            target.addReservation(c, resID);
+            DatabaseManager.insertReservation(resID, c.getCustomerID(), tableID);
             DatabaseManager.updateTableStatus(tableID, "OCCUPIED");
+            return true;
         }
+        System.out.println("[Canteen] Table " + tableID + " is not available.");
+        return false;
     }
 
-    public void releaseTable(String tableID) {
-        Table targetTable = tableList.stream()
-            .filter(t -> t.getTableID().equals(tableID))
-            .findFirst()
-            .orElse(null);
-        if (targetTable != null && targetTable.getStatus() != Status.AVAILABLE) {
-            targetTable.setStatus(Status.AVAILABLE);
-            targetTable.setReservation(null); 
+    public boolean releaseTable(String tableID) {
+        Table target = findTable(tableID);
+        if (target != null && target.getStatus() != Status.AVAILABLE) {
+            target.setStatus(Status.AVAILABLE);
+            target.setReservation(null);
             DatabaseManager.updateTableStatus(tableID, "AVAILABLE");
-            System.out.println("[Canteen] Table " + tableID + " has been successfully released.");
-        } else {
-            System.out.println("[Canteen Error] Cannot release Table " + tableID + ". It might already be available or not found.");
-        }
-    }
-    
-    public boolean addTable(Table tab) {
-        if (tableList.add(tab)) {
+            System.out.println("[Canteen] Table " + tableID + " released.");
             return true;
-        }   
+        }
+        System.out.println("[Canteen Error] Cannot release Table " + tableID + ".");
         return false;
     }
 
-    public boolean removeTable(Table tab) {
-        if (tableList.remove(tab)) {
-            return true;
-        }
-        return false;
-    }
+    public boolean addTable(Table tab) { return tableList.add(tab); }
+    public boolean removeTable(Table tab) { return tableList.remove(tab); }
 
-    public String getCanteenID() {
-        return canteenID;
-    }
-
-    public void setCanteenID(String canteenID) {
-        this.canteenID = canteenID;
-    }
-
-    public String getCanteenName() {
-        return canteenName;
-    }
-
-    public void setCanteenName(String canteenName) {
-        this.canteenName = canteenName;
-    }
-
-    public List<Customer> getCustomers() {
-        return customers;
-    }
-
-    public void setCustomers(List<Customer> customers) {
-        this.customers = customers;
-    }
-
-    public List<Admin> getAdmins() {
-        return admins;
-    }
-
-    public void setAdmins(List<Admin> admins) {
-        this.admins = admins;
-    }
-
-    public List<Table> getTableList() {
-        return tableList;
-    }
-
-    public void setTableList(List<Table> tableList) {
-        this.tableList = tableList;
-    }
+    public String getCanteenID() { return canteenID; }
+    public void setCanteenID(String canteenID) { this.canteenID = canteenID; }
+    public String getCanteenName() { return canteenName; }
+    public void setCanteenName(String canteenName) { this.canteenName = canteenName; }
+    public List<Customer> getCustomers() { return customers; }
+    public void setCustomers(List<Customer> customers) { this.customers = customers; }
+    public List<Admin> getAdmins() { return admins; }
+    public void setAdmins(List<Admin> admins) { this.admins = admins; }
+    public List<Table> getTableList() { return tableList; }
+    public void setTableList(List<Table> tableList) { this.tableList = tableList; }
 }

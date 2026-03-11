@@ -10,9 +10,9 @@ public class Reservation {
 
     public Reservation(String resID, Customer owner, Table tab) {
         this.reservationID = resID;
-        this.status = Status.RESERVED;
-        this.table = tab;
         this.owner = owner;
+        this.table = tab;
+        this.status = Status.RESERVED;
     }
 
     public boolean activateReservation() {
@@ -20,53 +20,21 @@ public class Reservation {
         return true;
     }
 
-    public boolean addFeedbaack(Customer owner, int score, String comment) {
+    public boolean addFeedback(Customer owner, int score, String comment) {
         feedback = new Feedback(owner, score, comment, this);
-        DatabaseManager.insertFeedback(this.reservationID, owner.getCustomerID(), score, comment);
+        DatabaseManager.insertFeedback(reservationID, owner.getCustomerID(), score, comment);
         return true;
     }
 
-    public String getReservationID() {
-        return reservationID;
-    }
-
-    public void setReservationID(String reservationID) {
-        this.reservationID = reservationID;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public List<Customer> getOccupant() {
-        return occupant;
-    }
-
-    public void setOccupant(List<Customer> occupant) {
-        this.occupant = occupant;
-    }
-
-    public Customer getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Customer owner) {
-        this.owner = owner;
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public void setTable(Table table) {
-        this.table = table;
-    }
-
-    public Feedback getFeedback() {
-        return feedback;
-    }
+    public String getReservationID() { return reservationID; }
+    public void setReservationID(String reservationID) { this.reservationID = reservationID; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public List<Customer> getOccupant() { return occupant; }
+    public void setOccupant(List<Customer> occupant) { this.occupant = occupant; }
+    public Customer getOwner() { return owner; }
+    public void setOwner(Customer owner) { this.owner = owner; }
+    public Table getTable() { return table; }
+    public void setTable(Table table) { this.table = table; }
+    public Feedback getFeedback() { return feedback; }
 }

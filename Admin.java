@@ -4,73 +4,53 @@ public class Admin extends User {
 
     public Admin(String uid, String fullName, String email, String pwd, String adminID, Canteen canteen) {
         super(uid, fullName, email, pwd);
+        this.adminID = adminID;
         this.canteen = canteen;
     }
 
-    public boolean AddTable(Table tab) {
-        boolean exists = canteen.getTableList().stream()
-                .anyMatch(t -> t.getTableID().equals(tab.getTableID()));
-        
-        if (exists) {
+    public boolean addTable(Table tab) {
+        if (canteen.getTableList().stream().anyMatch(t -> t.getTableID().equals(tab.getTableID()))) {
             System.out.println("[Admin] Error: Table " + tab.getTableID() + " already exists!");
             return false;
         }
-
         canteen.addTable(tab);
-        boolean dbSuccess = DatabaseManager.insertTable(tab);
-        
-        if(dbSuccess) {
-            System.out.println("[Admin] Success: Table " + tab.getTableID() + " added.");
-        }
-        return dbSuccess;
+        boolean success = DatabaseManager.insertTable(tab);
+        if (success) System.out.println("[Admin] Success: Table " + tab.getTableID() + " added.");
+        return success;
     }
 
-    public boolean RemoveTable(Table tab) {
-        boolean removedFromList = canteen.removeTable(tab);
-        if (removedFromList) {
-            boolean dbSuccess = DatabaseManager.deleteTable(tab.getTableID());
-            System.out.println("[Admin] Success: Table " + tab.getTableID() + " removed.");
-            return dbSuccess;
-        } else {
-            System.out.println("[Admin] Error: Table " + tab.getTableID() + " not found in Canteen.");
+    public boolean removeTable(Table tab) {
+        if (!canteen.removeTable(tab)) {
+            System.out.println("[Admin] Error: Table " + tab.getTableID() + " not found.");
             return false;
         }
+        System.out.println("[Admin] Success: Table " + tab.getTableID() + " removed.");
+        return DatabaseManager.deleteTable(tab.getTableID());
     }
 
-    public boolean UpdateTable(String tableID, int newCapacity) {
-        for (Table t : canteen.getTableList()) {
-            if (t.getTableID().equals(tableID)) {
+    public boolean updateTable(String tableID, int newCapacity) {
+        return canteen.getTableList().stream()
+            .filter(t -> t.getTableID().equals(tableID))
+            .findFirst()
+            .map(t -> {
                 t.setCapacity(newCapacity);
-                boolean dbSuccess = DatabaseManager.updateTable(t);
-                
-                if (dbSuccess) {
-                    System.out.println("[Admin] Success: Table " + tableID + " has been updated to " + newCapacity + " seats.");
-                }
-                return dbSuccess;
-            }
-        }
-        System.out.println("[Admin] Error: Table " + tableID + " not found.");
-        return false;
+                boolean success = DatabaseManager.updateTable(t);
+                if (success) System.out.println("[Admin] Success: Table " + tableID + " updated to " + newCapacity + " seats.");
+                return success;
+            })
+            .orElseGet(() -> {
+                System.out.println("[Admin] Error: Table " + tableID + " not found.");
+                return false;
+            });
     }
 
-    public void ViewAllFeedback() {
-        System.out.println("[Admin] " + this.getFullName() + " is requesting all feedback records...");
+    public void viewAllFeedback() {
+        System.out.println("[Admin] " + getFullName() + " is requesting all feedback records...");
         DatabaseManager.printAllFeedbacks();
     }
 
-    public String getAdminID() {
-        return adminID;
-    }
-
-    public void setAdminID(String adminID) {
-        this.adminID = adminID;
-    }
-
-    public Canteen getCanteen() {
-        return canteen;
-    }
-
-    public void setCanteen(Canteen canteen) {
-        this.canteen = canteen;
-    }
+    public String getAdminID() { return adminID; }
+    public void setAdminID(String adminID) { this.adminID = adminID; }
+    public Canteen getCanteen() { return canteen; }
+    public void setCanteen(Canteen canteen) { this.canteen = canteen; }
 }

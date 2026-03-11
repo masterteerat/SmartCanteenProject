@@ -12,11 +12,11 @@ public class Tester {
         System.out.println("--- [Admin Action] ---");
         // เพิ่มโต๊ะใหม่ (สมมติเป็นโต๊ะ 05 จุ 4 คน)
         Table t05 = new Table("05", 4, kmitl);
-        admin.AddTable(t05);
+        admin.addTable(t05);
 
         // แอดมินสั่งอัปเดตความจุโต๊ะ 05 เป็น 10 คน ผ่าน ID โดยตรง
         // ไม่ต้องไปสั่ง t05.setCapacity เองข้างนอกแล้ว
-        admin.UpdateTable("05", 10); 
+        admin.updateTable("05", 10); 
 
 
         // --- PHASE 2: CUSTOMER RESERVATION ---
@@ -29,14 +29,14 @@ public class Tester {
         System.out.println("\n--- [Process Checkout] ---");
         if (cus1.getReservation() != null) {
             // ให้ Feedback
-            cus1.getReservation().addFeedbaack(cus1, 5, "โต๊ะใหญ่ขึ้นเยอะเลยครับ ขอบคุณแอดมิน!");
+            cus1.getReservation().addFeedback(cus1, 5, "โต๊ะใหญ่ขึ้นเยอะเลยครับ ขอบคุณแอดมิน!");
             // คืนโต๊ะ
             cus1.checkOut();
         }
 
         // --- PHASE 4: VIEW RESULTS ---
         System.out.println("\n--- [Admin Review] ---");
-        admin.ViewAllFeedback();
+        admin.viewAllFeedback();
 
         System.out.println("=============================================");
         System.out.println("   🎉 SECURE TEST COMPLETED!");

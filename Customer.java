@@ -10,54 +10,39 @@ public class Customer extends User {
         this.reservation = res;
     }
 
-    public void makeReservation(String tableID) {
-        this.canteen.makeReservation(this, tableID);
+    public boolean makeReservation(String tableID) {
+        return canteen.makeReservation(this, tableID);
     }
 
-    public void activateReservation() {
-        this.reservation.activateReservation();
-    }
-
- public void checkOut() {
-        if (this.reservation != null) {
-            Table bookedTable = this.reservation.getTable();
-            String tableID = bookedTable.getTableID();
-            
-            if (bookedTable.getStatus() == Status.OCCUPIED) {
-                System.out.println("[CheckOut] " + this.getFullName() + " is checking out from Table " + tableID + "...");
-                this.canteen.releaseTable(tableID);
-                
-                this.reservation = null; 
-            } else {
-                System.out.println("[Error] Table " + tableID + " is not Occupied.");
-            }
-        } else {
-            System.out.println("[Error] " + this.getFullName() + " has no active reservation to check out.");
+    public boolean activateReservation() {
+        if (reservation == null) {
+            System.out.println("[Error] " + getFullName() + " has no reservation to activate.");
+            return false;
         }
+        return reservation.activateReservation();
     }
 
-    public String getCustomerID() {
-        return customerID;
+    public boolean checkOut() {
+        if (reservation == null) {
+            System.out.println("[Error] " + getFullName() + " has no active reservation.");
+            return false;
+        }
+        Table table = reservation.getTable();
+        if (table.getStatus() != Status.OCCUPIED) {
+            System.out.println("[Error] Table " + table.getTableID() + " is not Occupied.");
+            return false;
+        }
+        System.out.println("[CheckOut] " + getFullName() + " checking out from Table " + table.getTableID() + "...");
+        DatabaseManager.updateReservationStatus(reservation.getReservationID(), "COMPLETED");
+        boolean released = canteen.releaseTable(table.getTableID());
+        reservation = null;
+        return released;
     }
 
-    public void setCustomerID(String customerID) {
-        this.customerID = customerID;
-    }
-
-    public Canteen getCanteen() {
-        return canteen;
-    }
-
-    public void setCanteen(Canteen canteen) {
-        this.canteen = canteen;
-    }
-
-    public Reservation getReservation() {
-        return reservation;
-    }
-
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
-    }
-    
+    public String getCustomerID() { return customerID; }
+    public void setCustomerID(String customerID) { this.customerID = customerID; }
+    public Canteen getCanteen() { return canteen; }
+    public void setCanteen(Canteen canteen) { this.canteen = canteen; }
+    public Reservation getReservation() { return reservation; }
+    public void setReservation(Reservation reservation) { this.reservation = reservation; }
 }
