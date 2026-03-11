@@ -7,3 +7,7 @@ Run Program On Tester
 ```bash
 java -cp ".:lib/*" Tester
 ```
+
+OR
+
+Run on VS Code
