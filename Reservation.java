@@ -21,7 +21,8 @@ public class Reservation {
     }
 
     public boolean addFeedback(Customer owner, int score, String comment) {
-        feedback = new Feedback(owner, score, comment, this);
+        String feedbackID = "FB" + System.currentTimeMillis();
+        feedback = new Feedback(feedbackID, owner, score, comment, this);
         DatabaseManager.insertFeedback(reservationID, owner.getCustomerID(), score, comment);
         return true;
     }

@@ -13,7 +13,6 @@ public class Tester {
         admin.addTable(t05);
         admin.updateTable("05", 10); 
 
-
         // --- PHASE 2: CUSTOMER RESERVATION ---
         System.out.println( "\n--- [Customer Action] ---");
         System.out.println("Bonus is reserving Table 05 (Now 10 seats)...");
