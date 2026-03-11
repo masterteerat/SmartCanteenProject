@@ -1,30 +1,45 @@
 public class Tester {
     public static void main(String[] args) {
-        System.out.println("=== Smart Canteen System Initialization ===");
-        
-        // 1. Create a Canteen
+        System.out.println("=============================================");
+        System.out.println("   🚀 SMART CANTEEN - ADMIN CONTROL TEST");
+        System.out.println("=============================================\n");
+
         Canteen kmitl = new Canteen("C01", "KMITL Smart Canteen");
-        System.out.println("Loading initial tables... Total tables in system: " + kmitl.getTableList().size() + "\n");
-
-        // 2. Create Mock Customers
+        Admin admin = new Admin("U999", "Admin Boss", "admin@mail.com", "pass123", "A001", kmitl);
         Customer cus1 = new Customer("U001", "Bonus", "bonus@mail.com", "1234", "C001", kmitl, null);
-        Customer cus2 = new Customer("U002", "Ploy", "ploy@mail.com", "5678", "C002", kmitl, null);
 
-        // 3. Test Reservation Process
-        System.out.println("--- Testing Reservation Process ---");
-        
-        // Bonus reserves Table 01 (ลูกค้าจองเอง)
-        cus1.makeReservation("01");
+        // --- PHASE 1: ADMIN MANAGEMENT ---
+        System.out.println("--- [Admin Action] ---");
+        // เพิ่มโต๊ะใหม่ (สมมติเป็นโต๊ะ 05 จุ 4 คน)
+        Table t05 = new Table("05", 4, kmitl);
+        admin.AddTable(t05);
 
-        // Ploy tries to reserve Table 01 (ลูกค้าจองเอง แต่ต้องจองไม่ได้เพราะ Bonus จองไปแล้ว)
-        cus2.makeReservation("01");
+        // แอดมินสั่งอัปเดตความจุโต๊ะ 05 เป็น 10 คน ผ่าน ID โดยตรง
+        // ไม่ต้องไปสั่ง t05.setCapacity เองข้างนอกแล้ว
+        admin.UpdateTable("05", 10); 
 
-        // Ploy changes to reserve Table 02 (ลูกค้าจองเอง คราวนี้ต้องสำเร็จ)
-        cus2.makeReservation("02");
 
-        // 4. Print Summary
-        System.out.println("\n--- Reservation Summary ---");
-        System.out.println("Table 01 Status: " + kmitl.getTableList().get(0).getStatus());
-        System.out.println("Table 02 Status: " + kmitl.getTableList().get(1).getStatus());
+        // --- PHASE 2: CUSTOMER RESERVATION ---
+        System.out.println("\n--- [Customer Action] ---");
+        System.out.println("Bonus is reserving Table 05 (Now 10 seats)...");
+        cus1.makeReservation("05");
+
+
+        // --- PHASE 3: CHECKOUT & FEEDBACK ---
+        System.out.println("\n--- [Process Checkout] ---");
+        if (cus1.getReservation() != null) {
+            // ให้ Feedback
+            cus1.getReservation().addFeedbaack(cus1, 5, "โต๊ะใหญ่ขึ้นเยอะเลยครับ ขอบคุณแอดมิน!");
+            // คืนโต๊ะ
+            cus1.checkOut();
+        }
+
+        // --- PHASE 4: VIEW RESULTS ---
+        System.out.println("\n--- [Admin Review] ---");
+        admin.ViewAllFeedback();
+
+        System.out.println("=============================================");
+        System.out.println("   🎉 SECURE TEST COMPLETED!");
+        System.out.println("=============================================");
     }
 }

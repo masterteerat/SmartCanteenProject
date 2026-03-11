@@ -13,12 +13,12 @@ public class Canteen {
         this.canteenName = name;
         tableList = new ArrayList<>();
 
+        DatabaseManager.initializeDB();
         initializeData();
     }
 
     public void initializeData() {
-        tableList.add(new Table("01", 1, this));
-        tableList.add(new Table("02", 2, this));
+        this.tableList = DatabaseManager.loadTablesFromDB(this);
     }
 
     public void makeReservation(Customer c, String tableID){
@@ -30,11 +30,35 @@ public class Canteen {
         if (targetTable != null && targetTable.checkAvailability()) {
             String resID = "RES" + System.currentTimeMillis();
             targetTable.addReservation(c, resID);
+
+            DatabaseManager.updateTableStatus(tableID, "OCCUPIED");
         }
     }
 
+    public void releaseTable(String tableID) {
+        Table targetTable = tableList.stream()
+            .filter(t -> t.getTableID().equals(tableID))
+            .findFirst()
+            .orElse(null);
+        if (targetTable != null && targetTable.getStatus() != Status.AVAILABLE) {
+            targetTable.setStatus(Status.AVAILABLE);
+            targetTable.setReservation(null); 
+            DatabaseManager.updateTableStatus(tableID, "AVAILABLE");
+            System.out.println("[Canteen] Table " + tableID + " has been successfully released.");
+        } else {
+            System.out.println("[Canteen Error] Cannot release Table " + tableID + ". It might already be available or not found.");
+        }
+    }
+    
     public boolean addTable(Table tab) {
         if (tableList.add(tab)) {
+            return true;
+        }   
+        return false;
+    }
+
+    public boolean removeTable(Table tab) {
+        if (tableList.remove(tab)) {
             return true;
         }
         return false;

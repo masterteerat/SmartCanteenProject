@@ -14,6 +14,28 @@ public class Customer extends User {
         this.canteen.makeReservation(this, tableID);
     }
 
+    public void activateReservation() {
+        this.reservation.activateReservation();
+    }
+
+ public void checkOut() {
+        if (this.reservation != null) {
+            Table bookedTable = this.reservation.getTable();
+            String tableID = bookedTable.getTableID();
+            
+            if (bookedTable.getStatus() == Status.OCCUPIED) {
+                System.out.println("[CheckOut] " + this.getFullName() + " is checking out from Table " + tableID + "...");
+                this.canteen.releaseTable(tableID);
+                
+                this.reservation = null; 
+            } else {
+                System.out.println("[Error] Table " + tableID + " is not Occupied.");
+            }
+        } else {
+            System.out.println("[Error] " + this.getFullName() + " has no active reservation to check out.");
+        }
+    }
+
     public String getCustomerID() {
         return customerID;
     }

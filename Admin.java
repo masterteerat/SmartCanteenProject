@@ -8,19 +8,54 @@ public class Admin extends User {
     }
 
     public boolean AddTable(Table tab) {
-        return true;
+        boolean exists = canteen.getTableList().stream()
+                .anyMatch(t -> t.getTableID().equals(tab.getTableID()));
+        
+        if (exists) {
+            System.out.println("[Admin] Error: Table " + tab.getTableID() + " already exists!");
+            return false;
+        }
+
+        canteen.addTable(tab);
+        boolean dbSuccess = DatabaseManager.insertTable(tab);
+        
+        if(dbSuccess) {
+            System.out.println("[Admin] Success: Table " + tab.getTableID() + " added.");
+        }
+        return dbSuccess;
     }
 
     public boolean RemoveTable(Table tab) {
-        return true;
+        boolean removedFromList = canteen.removeTable(tab);
+        if (removedFromList) {
+            boolean dbSuccess = DatabaseManager.deleteTable(tab.getTableID());
+            System.out.println("[Admin] Success: Table " + tab.getTableID() + " removed.");
+            return dbSuccess;
+        } else {
+            System.out.println("[Admin] Error: Table " + tab.getTableID() + " not found in Canteen.");
+            return false;
+        }
     }
 
-    public boolean UpdateTable(Table tab) {
-        return true;
+    public boolean UpdateTable(String tableID, int newCapacity) {
+        for (Table t : canteen.getTableList()) {
+            if (t.getTableID().equals(tableID)) {
+                t.setCapacity(newCapacity);
+                boolean dbSuccess = DatabaseManager.updateTable(t);
+                
+                if (dbSuccess) {
+                    System.out.println("[Admin] Success: Table " + tableID + " has been updated to " + newCapacity + " seats.");
+                }
+                return dbSuccess;
+            }
+        }
+        System.out.println("[Admin] Error: Table " + tableID + " not found.");
+        return false;
     }
 
-    public void ViewFeedback() {
-
+    public void ViewAllFeedback() {
+        System.out.println("[Admin] " + this.getFullName() + " is requesting all feedback records...");
+        DatabaseManager.printAllFeedbacks();
     }
 
     public String getAdminID() {
