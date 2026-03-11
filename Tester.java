@@ -1,6 +1,6 @@
 public class Tester {
     public static void main(String[] args) {
-        System.out.println("Initial Data.....\n");
+        // System.out.println("Initial Data.....\n");
         Canteen kmitl = new Canteen("C01", "KMITL Smart Canteen");
 
         Admin admin = new Admin("U999", "Boss", "admin@mail.com", "pass123", "A001", kmitl);
