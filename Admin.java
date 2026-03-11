@@ -10,12 +10,12 @@ public class Admin extends User {
 
     public boolean addTable(Table tab) {
         if (canteen.getTableList().stream().anyMatch(t -> t.getTableID().equals(tab.getTableID()))) {
-            System.out.println("[Admin] Error: Table " + tab.getTableID() + " already exists!");
+            System.out.println("Error: Table " + tab.getTableID() + " already exists!");
             return false;
         }
         canteen.addTable(tab);
         boolean success = DatabaseManager.insertTable(tab);
-        if (success) System.out.println("[Admin] Success: Table " + tab.getTableID() + " added.");
+        if (success) System.out.println("Success: Table " + tab.getTableID() + " added.");
         return success;
     }
 
@@ -35,7 +35,7 @@ public class Admin extends User {
             .map(t -> {
                 t.setCapacity(newCapacity);
                 boolean success = DatabaseManager.updateTable(t);
-                if (success) System.out.println("[Admin] Success: Table " + tableID + " updated to " + newCapacity + " seats.");
+                if (success) System.out.println("Success: Table " + tableID + " updated to " + newCapacity + " seats.");
                 return success;
             })
             .orElseGet(() -> {
@@ -45,7 +45,6 @@ public class Admin extends User {
     }
 
     public void viewAllFeedback() {
-        System.out.println("[Admin] " + getFullName() + " is requesting all feedback records...");
         DatabaseManager.printAllFeedbacks();
     }
 

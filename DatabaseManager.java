@@ -32,15 +32,15 @@ public class DatabaseManager {
             stmt.execute("CREATE TABLE IF NOT EXISTS reservations (reservationID TEXT PRIMARY KEY, customerID TEXT, tableID TEXT, status TEXT, FOREIGN KEY(customerID) REFERENCES customers(customerID), FOREIGN KEY(tableID) REFERENCES tables(tableID))");
             stmt.execute("CREATE TABLE IF NOT EXISTS feedbacks (feedbackID INTEGER PRIMARY KEY AUTOINCREMENT, reservationID TEXT, customerID TEXT, score INTEGER, comment TEXT, FOREIGN KEY(reservationID) REFERENCES reservations(reservationID), FOREIGN KEY(customerID) REFERENCES customers(customerID))");
 
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS count FROM tables");
-            if (rs.getInt("count") == 0) {
-                stmt.execute("INSERT INTO tables    VALUES ('01', 4, 'AVAILABLE')");
-                stmt.execute("INSERT INTO tables    VALUES ('02', 2, 'AVAILABLE')");
-                stmt.execute("INSERT INTO customers VALUES ('C001', 'Bonus', 'bonus@mail.com', '1234')");
-                stmt.execute("INSERT INTO customers VALUES ('C002', 'Ploy',  'ploy@mail.com',  '5678')");
-                stmt.execute("INSERT INTO admins    VALUES ('A001', 'Admin Super', 'admin@mail.com', 'admin123')");
-                System.out.println("[DB] Initialized with default data.");
-            }
+            // ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS count FROM tables");
+            // if (rs.getInt("count") == 0) {
+            //     stmt.execute("INSERT INTO tables    VALUES ('01', 4, 'AVAILABLE')");
+            //     stmt.execute("INSERT INTO tables    VALUES ('02', 2, 'AVAILABLE')");
+            //     stmt.execute("INSERT INTO customers VALUES ('C001', 'Bonus', 'bonus@mail.com', '1234')");
+            //     stmt.execute("INSERT INTO customers VALUES ('C002', 'Ploy',  'ploy@mail.com',  '5678')");
+            //     stmt.execute("INSERT INTO admins    VALUES ('A001', 'Admin Super', 'admin@mail.com', 'admin123')");
+            //     System.out.println("[DB] Initialized with default data.");
+            // }
         } catch (SQLException e) {
             System.out.println("[DB Error] " + e.getMessage());
         }
@@ -79,6 +79,35 @@ public class DatabaseManager {
     public static void updateTableStatus(String tableID, String status) {
         execute("UPDATE tables SET status = ? WHERE tableID = ?", status, tableID);
     }
+
+    public static void insertCustomer(Customer c) {
+        String sql = "INSERT OR IGNORE INTO customers (customerID, fullName, email, password) VALUES (?, ?, ?, ?)";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, c.getCustomerID());
+            pstmt.setString(2, c.getFullName());
+            pstmt.setString(3, c.getEmail());
+            pstmt.setString(4, c.getPassword());
+            pstmt.executeUpdate();
+            System.out.println("Customer " + c.getFullName() + " saved.");
+        } catch (SQLException e) {
+            System.out.println("[DB Error - insertCustomer] " + e.getMessage());
+        }
+    }
+
+    public static void insertAdmin(Admin a) {
+        String sql = "INSERT OR IGNORE INTO admins (adminID, fullName, email, password) VALUES (?, ?, ?, ?)";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, a.getAdminID());
+            pstmt.setString(2, a.getFullName());
+            pstmt.setString(3, a.getEmail());
+            pstmt.setString(4, a.getPassword());
+            System.out.println("Admin " + a.getFullName() + " saved.");
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("[DB Error - insertAdmin] " + e.getMessage());
+        }
+    }
+
 
     // RESERVATION
     public static void insertReservation(String resID, String cusID, String tableID) {

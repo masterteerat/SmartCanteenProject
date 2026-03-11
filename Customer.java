@@ -3,22 +3,18 @@ public class Customer extends User {
     private Canteen canteen;
     private Reservation reservation;
 
-    public Customer(String uid, String fullName, String email, String pwd, String cusID, Canteen canteen, Reservation res) {
+    public Customer(String uid, String fullName, String email, String pwd, String cusID, Canteen canteen) {
         super(uid, fullName, email, pwd);
         this.customerID = cusID;
         this.canteen = canteen;
-        this.reservation = res;
-    }
-
-    public boolean makeReservation(String tableID) {
-        return canteen.makeReservation(this, tableID);
     }
 
     public boolean activateReservation() {
         if (reservation == null) {
-            System.out.println("[Error] " + getFullName() + " has no reservation to activate.");
+            System.out.println("Error: " + getFullName() + " has no reservation to activate.");
             return false;
         }
+        System.out.println(getFullName() + " has activated the table");
         return reservation.activateReservation();
     }
 
@@ -32,7 +28,8 @@ public class Customer extends User {
             System.out.println("[Error] Table " + table.getTableID() + " is not Occupied.");
             return false;
         }
-        System.out.println("[CheckOut] " + getFullName() + " checking out from Table " + table.getTableID() + "...");
+
+        System.out.println(getFullName() + " checking out from Table " + table.getTableID());
         DatabaseManager.updateReservationStatus(reservation.getReservationID(), "COMPLETED");
         boolean released = canteen.releaseTable(table.getTableID());
         reservation = null;
