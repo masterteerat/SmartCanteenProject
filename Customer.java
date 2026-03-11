@@ -18,14 +18,14 @@ public class Customer extends User {
         return reservation.activateReservation();
     }
 
-    public boolean checkOut() {
+    public boolean checkout() {
         if (reservation == null) {
-            System.out.println("[Error] " + getFullName() + " has no active reservation.");
+            System.out.println(getFullName() + " has no active reservation.");
             return false;
         }
         Table table = reservation.getTable();
         if (table.getStatus() != Status.OCCUPIED) {
-            System.out.println("[Error] Table " + table.getTableID() + " is not Occupied.");
+            System.out.println("Table " + table.getTableID() + " is not Occupied.");
             return false;
         }
 

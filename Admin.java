@@ -13,6 +13,7 @@ public class Admin extends User {
             System.out.println("Error: Table " + tab.getTableID() + " already exists!");
             return false;
         }
+        
         canteen.addTable(tab);
         boolean success = DatabaseManager.insertTable(tab);
         if (success) System.out.println("Success: Table " + tab.getTableID() + " added.");
@@ -21,10 +22,10 @@ public class Admin extends User {
 
     public boolean removeTable(Table tab) {
         if (!canteen.removeTable(tab)) {
-            System.out.println("[Admin] Error: Table " + tab.getTableID() + " not found.");
+            System.out.println("Error: Table " + tab.getTableID() + " not found.");
             return false;
         }
-        System.out.println("[Admin] Success: Table " + tab.getTableID() + " removed.");
+        System.out.println("Success: Table " + tab.getTableID() + " removed.");
         return DatabaseManager.deleteTable(tab.getTableID());
     }
 
@@ -39,7 +40,7 @@ public class Admin extends User {
                 return success;
             })
             .orElseGet(() -> {
-                System.out.println("[Admin] Error: Table " + tableID + " not found.");
+                System.out.println("Error: Table " + tableID + " not found.");
                 return false;
             });
     }

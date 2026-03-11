@@ -20,10 +20,13 @@ public class Tester {
 
         System.out.println("\nFeedback and Checkout");
         if (cus1.getReservation() != null && cus1.getReservation().getStatus() == Status.OCCUPIED) {
-            cus1.getReservation().addFeedback(cus1, 2, "This table is so dirty");
-            cus1.checkOut();
+            cus1.getReservation().addFeedback(cus1, 5, "This table is so dirty");
+            cus1.checkout();
         }
 
         admin.viewAllFeedback();
+        
+        Report report = new Report(admin, kmitl);
+        report.printReport();
     }
 }
