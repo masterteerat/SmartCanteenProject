@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMITL Smart Canteen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // ตั้งค่าสีประจำสถาบัน KMITL (สีแคแสด)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { kmitl: '#E04111', kmitl_dark: '#b3330e' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <nav class="bg-kmitl text-white p-4 shadow-md flex justify-between items-center">
+        <div class="text-xl font-bold flex items-center gap-2">
+            <span>🍽️ KMITL Smart Canteen</span>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="switchView('customer')" class="px-4 py-2 bg-white text-kmitl font-semibold rounded-lg shadow hover:bg-gray-100 transition">🧑‍🎓 Customer</button>
+            <button onclick="switchView('admin')" class="px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg shadow hover:bg-gray-800 transition">👑 Admin Boss</button>
+        </div>
+    </nav>
+
+    <main id="customer-view" class="p-8 max-w-5xl mx-auto block">
+        <h2 class="text-3xl font-bold mb-6 text-gray-700">Select a Table</h2>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <div onclick="bookTable('01')" class="cursor-pointer bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition transform hover:-translate-y-1 text-center">
+                <div class="text-2xl font-bold text-gray-800">Table 01</div>
+                <div class="text-green-500 font-semibold mt-2">● AVAILABLE</div>
+                <div class="text-sm text-gray-500 mt-1">Capacity: 4</div>
+            </div>
+
+            <div class="bg-gray-100 p-6 rounded-xl shadow border-t-4 border-red-500 opacity-70 text-center cursor-not-allowed">
+                <div class="text-2xl font-bold text-gray-800">Table 02</div>
+                <div class="text-red-500 font-semibold mt-2">● OCCUPIED</div>
+                <div class="text-sm text-gray-500 mt-1">Reserved by Bonus</div>
+            </div>
+
+            <div onclick="bookTable('03')" class="cursor-pointer bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition transform hover:-translate-y-1 text-center">
+                <div class="text-2xl font-bold text-gray-800">Table 03</div>
+                <div class="text-green-500 font-semibold mt-2">● AVAILABLE</div>
+                <div class="text-sm text-gray-500 mt-1">Capacity: 2</div>
+            </div>
+
+            <div class="bg-gray-100 p-6 rounded-xl shadow border-t-4 border-red-500 opacity-70 text-center cursor-not-allowed">
+                <div class="text-2xl font-bold text-gray-800">Table 04</div>
+                <div class="text-red-500 font-semibold mt-2">● OCCUPIED</div>
+                <div class="text-sm text-gray-500 mt-1">Reserved by Peako</div>
+            </div>
+        </div>
+
+        <div id="active-res" class="hidden bg-kmitl text-white p-6 rounded-xl shadow-lg flex justify-between items-center">
+            <div>
+                <h3 class="text-2xl font-bold">Your Active Reservation</h3>
+                <p class="text-lg opacity-90 mt-1" id="res-detail">Table XX - Status: OCCUPIED</p>
+            </div>
+            <button onclick="checkout()" class="bg-white text-red-600 font-bold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition">
+                Check-out & Feedback
+            </button>
+        </div>
+    </main>
+
+
+    <main id="admin-view" class="p-8 max-w-5xl mx-auto hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-700">Admin Analytics Dashboard</h2>
+            <button onclick="alert('Generated new report and saved to Database!')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-700">
+                + Generate Report
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kmitl">
+                <div class="text-gray-500 text-sm font-bold uppercase">Total Reservations</div>
+                <div class="text-4xl font-black text-gray-800 mt-2">1,284</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+                <div class="text-gray-500 text-sm font-bold uppercase">Average Rating</div>
+                <div class="text-4xl font-black text-gray-800 mt-2">4.8 <span class="text-lg text-gray-400">/ 5.0</span></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500">
+                <div class="text-gray-500 text-sm font-bold uppercase">Peak Booking Hour</div>
+                <div class="text-4xl font-black text-gray-800 mt-2">12:00</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gray-800 text-white p-4 font-bold">🗄️ System Report Logs (Snapshot)</div>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="p-4 border-b">Report ID</th>
+                        <th class="p-4 border-b">Date</th>
+                        <th class="p-4 border-b">Generated By</th>
+                        <th class="p-4 border-b">Period</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-gray-50 transition border-b">
+                        <td class="p-4 font-mono text-sm">RPT1774342244151</td>
+                        <td class="p-4">2026-03-24</td>
+                        <td class="p-4">Boss (A001)</td>
+                        <td class="p-4 text-green-600 font-semibold">All time</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition border-b">
+                        <td class="p-4 font-mono text-sm">RPT1774342200000</td>
+                        <td class="p-4">2026-03-23</td>
+                        <td class="p-4">Boss (A001)</td>
+                        <td class="p-4 text-gray-600">2026-03-01 to 2026-03-20</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        function switchView(view) {
+            document.getElementById('customer-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById(view + '-view').classList.remove('hidden');
+            document.getElementById(view + '-view').classList.add('block');
+        }
+
+        function bookTable(tableId) {
+            let confirmBook = confirm(`Do you want to book Table ${tableId}?`);
+            if (confirmBook) {
+                document.getElementById('active-res').classList.remove('hidden');
+                document.getElementById('res-detail').innerText = `Table ${tableId} - Status: OCCUPIED (Checking in...)`;
+                alert(`Success! You have booked Table ${tableId}. Database updated.`);
+            }
+        }
+
+        function checkout() {
+            let score = prompt("Please rate your experience (1-5):", "5");
+            let comment = prompt("Leave a comment (Optional):", "Great food!");
+            if (score) {
+                document.getElementById('active-res').classList.add('hidden');
+                alert("Thank you for your feedback! The table is now available.");
+            }
+        }
+    </script>
+</body>
+</html>

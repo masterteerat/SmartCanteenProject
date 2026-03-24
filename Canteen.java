@@ -16,6 +16,7 @@ public class Canteen {
         this.customers = new ArrayList<>();
         this.admins = new ArrayList<>();
         this.tableList = new ArrayList<>();
+        this.reportLog = new ArrayList<>();
         DatabaseManager.initializeDB();
         this.tableList = DatabaseManager.loadTablesFromDB(this);
     }
@@ -65,11 +66,15 @@ public class Canteen {
     }
 
     public Report makeReport(Admin admin) {
-        return new Report(admin, this);
+        Report r = new Report(admin, this);
+        reportLog.add(r);
+        return r; 
     }
 
     public Report makeReport(Admin admin, LocalDate start, LocalDate end) {
-        return new Report(admin, this, start, end);
+        Report r = new Report(admin, this, start, end);
+        reportLog.add(r);
+        return r; 
     }
 
     public List<String> getUsage(LocalDate start, LocalDate end) {
