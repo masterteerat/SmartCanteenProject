@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,13 +8,26 @@ public class Canteen {
     private List<Customer> customers;
     private List<Admin> admins;
     private List<Table> tableList;
+    private List<Report> reportLog;
 
     public Canteen(String canteenID, String name) {
         this.canteenID = canteenID;
         this.canteenName = name;
+        this.customers = new ArrayList<>();
+        this.admins = new ArrayList<>();
         this.tableList = new ArrayList<>();
         DatabaseManager.initializeDB();
         this.tableList = DatabaseManager.loadTablesFromDB(this);
+    }
+
+    public void registerCustomer(Customer c) {
+        this.customers.add(c);
+        DatabaseManager.insertCustomer(c);
+    }
+
+    public void registerAdmin(Admin a) {
+        this.admins.add(a);
+        DatabaseManager.insertAdmin(a);
     }
 
     private Table findTable(String tableID) {
@@ -23,6 +37,7 @@ public class Canteen {
     }
 
     public boolean makeReservation(Customer c, String tableID) {
+        if (c.getReservation() != null) return false;
         Table target = findTable(tableID);
         if (target != null && target.checkAvailability()) {
             String resID = "RES" + System.currentTimeMillis();
@@ -47,6 +62,48 @@ public class Canteen {
         }
         System.out.println("Cannot release Table " + tableID + ".");
         return false;
+    }
+
+    public Report makeReport(Admin admin) {
+        return new Report(admin, this);
+    }
+
+    public Report makeReport(Admin admin, LocalDate start, LocalDate end) {
+        return new Report(admin, this, start, end);
+    }
+
+    public List<String> getUsage(LocalDate start, LocalDate end) {
+        List<String> allUsage = new ArrayList<>();
+        
+        for (Table t : tableList) {
+            allUsage.add(">>> History of Table " + t.getTableID());
+            List<String> tableUsage = t.getTableUsage(start, end);
+            
+            if (tableUsage.isEmpty()) {
+                allUsage.add(" - No records");
+            } else {
+                for (String record : tableUsage) {
+                    allUsage.add(" - " + record);
+                }
+            }
+        }
+        return allUsage;
+    }
+
+    public int getTotalReservations(LocalDate start, LocalDate end) {
+        return DatabaseManager.getTotalReservationsCount(start, end);
+    }
+
+    public double getAverageScore(LocalDate start, LocalDate end) {
+        return DatabaseManager.getAverageScore(start, end);
+    }
+
+    public String getMostPopularTable(LocalDate start, LocalDate end) {
+        return DatabaseManager.getMostPopularTable(start, end);
+    }
+
+    public String getPeakHour(LocalDate start, LocalDate end) {
+        return DatabaseManager.getPeakHour(start, end);
     }
 
     public boolean addTable(Table tab) { return tableList.add(tab); }

@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,6 @@ public class DatabaseManager {
         return DriverManager.getConnection(URL);
     }
 
-    // Helper: execute INSERT/UPDATE/DELETE
     private static boolean execute(String sql, Object... params) {
         try (Connection conn = connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -23,7 +23,7 @@ public class DatabaseManager {
         }
     }
 
-    // INIT
+    // ─── INIT ───────────────────────────────────────────────────────────────
     public static void initializeDB() {
         try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS customers (customerID TEXT PRIMARY KEY, fullName TEXT NOT NULL, email TEXT UNIQUE, password TEXT)");
@@ -37,6 +37,12 @@ public class DatabaseManager {
                     + "reserveTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                     + "FOREIGN KEY(customerID) REFERENCES customers(customerID), "
                     + "FOREIGN KEY(tableID) REFERENCES tables(tableID))");
+            stmt.execute("CREATE TABLE IF NOT EXISTS reservation_occupants ("
+                    + "reservationID TEXT, "
+                    + "customerID TEXT, "
+                    + "PRIMARY KEY(reservationID, customerID), "
+                    + "FOREIGN KEY(reservationID) REFERENCES reservations(reservationID), "
+                    + "FOREIGN KEY(customerID) REFERENCES customers(customerID))");
             stmt.execute("CREATE TABLE IF NOT EXISTS feedbacks ("
                     + "feedbackID INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + "reservationID TEXT, "
@@ -45,23 +51,12 @@ public class DatabaseManager {
                     + "comment TEXT, "
                     + "FOREIGN KEY(reservationID) REFERENCES reservations(reservationID), "
                     + "FOREIGN KEY(customerID) REFERENCES customers(customerID))");
-
-            // ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS count FROM tables");
-            // if (rs.getInt("count") == 0) {
-            //     stmt.execute("INSERT INTO tables    VALUES ('01', 4, 'AVAILABLE')");
-            //     stmt.execute("INSERT INTO tables    VALUES ('02', 2, 'AVAILABLE')");
-            //     stmt.execute("INSERT INTO customers VALUES ('C001', 'Bonus', 'bonus@mail.com', '1234')");
-            //     stmt.execute("INSERT INTO customers VALUES ('C002', 'Ploy',  'ploy@mail.com',  '5678')");
-            //     stmt.execute("INSERT INTO admins    VALUES ('A001', 'Admin Super', 'admin@mail.com', 'admin123')");
-            //     System.out.println("[DB] Initialized with default data.");
-            // }
-            
         } catch (SQLException e) {
             System.out.println("[DB Error] " + e.getMessage());
         }
     }
 
-    // TABLE
+    // ─── TABLE ──────────────────────────────────────────────────────────────
     public static List<Table> loadTablesFromDB(Canteen canteen) {
         List<Table> list = new ArrayList<>();
         try (Connection conn = connect();
@@ -95,14 +90,62 @@ public class DatabaseManager {
         execute("UPDATE tables SET status = ? WHERE tableID = ?", status, tableID);
     }
 
+    public static double getSpecificTableAverageScore(LocalDate start, LocalDate end, String tableID) {
+        String dateCondition = "";
+        if (start != null && end != null) {
+            dateCondition = " AND date(r.reserveTime) BETWEEN '" + start + "' AND '" + end + "'";
+        }
+        
+        String sql = "SELECT AVG(f.score) AS avg FROM feedbacks f "
+                   + "JOIN reservations r ON f.reservationID = r.reservationID "
+                   + "WHERE r.tableID = '" + tableID + "'" + dateCondition;
+                   
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            return rs.getDouble("avg");
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+            return 0.0;
+        }
+    }
+
+    public static List<String> getSpecificTableUsage(LocalDate start, LocalDate end, String tableID) {
+        List<String> usageList = new ArrayList<>();
+        String dateCondition = "";
+        if (start != null && end != null) {
+            dateCondition = " AND date(reserveTime) BETWEEN '" + start + "' AND '" + end + "'";
+        }
+        
+        String sql = "SELECT reservationID, customerID, reserveTime, status "
+                   + "FROM reservations "
+                   + "WHERE tableID = '" + tableID + "'" + dateCondition
+                   + " ORDER BY reserveTime DESC";
+                   
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            while (rs.next()) {
+                String record = String.format("Time: %s | ResID: %s | Customer: %s | Status: %s",
+                        rs.getString("reserveTime"),
+                        rs.getString("reservationID"),
+                        rs.getString("customerID"),
+                        rs.getString("status"));
+                usageList.add(record);
+            }
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+        }
+        return usageList;
+    }
+
+    // ─── CUSTOMER / ADMIN ───────────────────────────────────────────────────
     public static void insertCustomer(Customer c) {
         String sql = "INSERT OR IGNORE INTO customers (customerID, fullName, email, password) VALUES (?, ?, ?, ?)";
-        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, c.getCustomerID());
-            pstmt.setString(2, c.getFullName());
-            pstmt.setString(3, c.getEmail());
-            pstmt.setString(4, c.getPassword());
-            pstmt.executeUpdate();
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCustomerID());
+            ps.setString(2, c.getFullName());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getPassword());
+            ps.executeUpdate();
             System.out.println("Customer " + c.getFullName() + " saved.");
         } catch (SQLException e) {
             System.out.println("[DB Error - insertCustomer] " + e.getMessage());
@@ -111,28 +154,40 @@ public class DatabaseManager {
 
     public static void insertAdmin(Admin a) {
         String sql = "INSERT OR IGNORE INTO admins (adminID, fullName, email, password) VALUES (?, ?, ?, ?)";
-        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, a.getAdminID());
-            pstmt.setString(2, a.getFullName());
-            pstmt.setString(3, a.getEmail());
-            pstmt.setString(4, a.getPassword());
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, a.getAdminID());
+            ps.setString(2, a.getFullName());
+            ps.setString(3, a.getEmail());
+            ps.setString(4, a.getPassword());
+            ps.executeUpdate();
             System.out.println("Admin " + a.getFullName() + " saved.");
-            pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println("[DB Error - insertAdmin] " + e.getMessage());
         }
     }
 
-    // RESERVATION
+    // ─── RESERVATION ────────────────────────────────────────────────────────
     public static void insertReservation(String resID, String cusID, String tableID) {
-        String sql = "INSERT INTO reservations (reservationID, customerID, tableID, status) VALUES (?, ?, ?, ?)";
-        execute(sql, resID, cusID, tableID, "RESERVED");
+        execute("INSERT INTO reservations (reservationID, customerID, tableID, status) VALUES (?, ?, ?, ?)",
+                resID, cusID, tableID, "RESERVED");
     }
+
     public static void updateReservationStatus(String reservationID, String status) {
         execute("UPDATE reservations SET status = ? WHERE reservationID = ?", status, reservationID);
     }
 
-    // FEEDBACK
+    // ─── OCCUPANT ───────────────────────────────────────────────────────────
+    public static void insertOccupant(String resID, String cusID) {
+        if (execute("INSERT INTO reservation_occupants VALUES (?, ?)", resID, cusID))
+            System.out.println("[DB] Occupant " + cusID + " added to reservation " + resID);
+    }
+
+    public static void deleteOccupant(String resID, String cusID) {
+        if (execute("DELETE FROM reservation_occupants WHERE reservationID = ? AND customerID = ?", resID, cusID))
+            System.out.println("[DB] Occupant " + cusID + " removed from reservation " + resID);
+    }
+
+    // ─── FEEDBACK ───────────────────────────────────────────────────────────
     public static void insertFeedback(String resID, String cusID, int score, String comment) {
         if (execute("INSERT INTO feedbacks (reservationID, customerID, score, comment) VALUES (?, ?, ?, ?)",
                 resID, cusID, score, comment))
@@ -140,11 +195,10 @@ public class DatabaseManager {
     }
 
     public static void printAllFeedbacks() {
-        String sql = "SELECT f.feedbackID, f.reservationID, r.tableID, c.fullName, f.score, f.comment " +
-                     "FROM feedbacks f " +
-                     "JOIN customers c ON f.customerID = c.customerID " +
-                     "JOIN reservations r ON f.reservationID = r.reservationID";
-
+        String sql = "SELECT f.feedbackID, f.reservationID, r.tableID, c.fullName, f.score, f.comment "
+                   + "FROM feedbacks f "
+                   + "JOIN customers c ON f.customerID = c.customerID "
+                   + "JOIN reservations r ON f.reservationID = r.reservationID";
         try (Connection conn = connect();
              ResultSet rs = conn.createStatement().executeQuery(sql)) {
             System.out.println("\n========== ALL FEEDBACKS ==========");
@@ -152,11 +206,8 @@ public class DatabaseManager {
             while (rs.next()) {
                 hasData = true;
                 System.out.printf("ID: %d | Res: %s | Table: %s | Customer: %s | Score: %d/5%n",
-                        rs.getInt("feedbackID"), 
-                        rs.getString("reservationID"),
-                        rs.getString("tableID"),
-                        rs.getString("fullName"), 
-                        rs.getInt("score"));
+                        rs.getInt("feedbackID"), rs.getString("reservationID"),
+                        rs.getString("tableID"), rs.getString("fullName"), rs.getInt("score"));
                 System.out.println("Comment : " + rs.getString("comment"));
                 System.out.println("------------------------------------");
             }
@@ -167,46 +218,61 @@ public class DatabaseManager {
         }
     }
 
-    //REPORT
-    public static int getTotalReservationsCount() {
-        String sql = "SELECT COUNT(*) AS total FROM reservations";
-        try (Connection conn = connect(); ResultSet rs = conn.createStatement().executeQuery(sql)) {
-            if (rs.next()) return rs.getInt("total");
-        } catch (SQLException e) { System.out.println("[DB Error] " + e.getMessage()); }
-        return 0;
+    // ─── REPORT ─────────────────────────────────────────────────────────────
+    private static String dateFilter(LocalDate start, LocalDate end) {
+        if (start == null || end == null) return "";
+        return " WHERE date(reserveTime) BETWEEN '" + start + "' AND '" + end + "'";
     }
 
-    public static double getAverageScore() {
-        String sql = "SELECT AVG(score) AS avg_score FROM feedbacks";
-        try (Connection conn = connect(); ResultSet rs = conn.createStatement().executeQuery(sql)) {
-            if (rs.next()) return rs.getDouble("avg_score");
-        } catch (SQLException e) { System.out.println("[DB Error] " + e.getMessage()); }
-        return 0.0;
+    public static int getTotalReservationsCount(LocalDate start, LocalDate end) {
+        String sql = "SELECT COUNT(*) AS count FROM reservations" + dateFilter(start, end);
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            return rs.getInt("count");
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+            return 0;
+        }
     }
 
-    public static String getMostPopularTable() {
-        String sql = "SELECT tableID, COUNT(*) AS cnt FROM reservations GROUP BY tableID ORDER BY cnt DESC LIMIT 1";
-        try (Connection conn = connect(); ResultSet rs = conn.createStatement().executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getString("tableID") + " (" + rs.getInt("cnt") + " times)";
-            }
-        } catch (SQLException e) { System.out.println("[DB Error] " + e.getMessage()); }
-        return "N/A";
+    public static double getAverageScore(LocalDate start, LocalDate end) {
+        String filter = (start == null) ? ""
+                : " AND date(r.reserveTime) BETWEEN '" + start + "' AND '" + end + "'";
+        String sql = "SELECT AVG(f.score) AS avg FROM feedbacks f "
+                   + "JOIN reservations r ON f.reservationID = r.reservationID"
+                   + " WHERE 1=1" + filter;
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            return rs.getDouble("avg");
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+            return 0.0;
+        }
     }
 
-    public static String getPeakHour() {
-        String sql = "SELECT strftime('%H', reserveTime) AS hour, COUNT(*) AS count " +
-                     "FROM reservations WHERE reserveTime IS NOT NULL " +
-                     "GROUP BY hour ORDER BY count DESC LIMIT 1";
-        try (Connection conn = connect(); ResultSet rs = conn.createStatement().executeQuery(sql)) {
-            if (rs.next()) {
-                String hour = rs.getString("hour");
-                int count = rs.getInt("count");
-                if (hour != null) {
-                    return hour + ":00 - " + hour + ":59 (" + count + " bookings)";
-                }
-            }
-        } catch (SQLException e) { System.out.println("[DB Error] " + e.getMessage()); }
-        return "N/A";
+    public static String getMostPopularTable(LocalDate start, LocalDate end) {
+        String sql = "SELECT tableID, COUNT(*) AS cnt FROM reservations"
+                   + dateFilter(start, end)
+                   + " GROUP BY tableID ORDER BY cnt DESC LIMIT 1";
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            return rs.next() ? rs.getString("tableID") : "N/A";
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+            return "N/A";
+        }
+    }
+
+    public static String getPeakHour(LocalDate start, LocalDate end) {
+        String sql = "SELECT strftime('%H', reserveTime) AS hour, COUNT(*) AS cnt "
+                   + "FROM reservations" + dateFilter(start, end)
+                   + " GROUP BY hour ORDER BY cnt DESC LIMIT 1";
+        try (Connection conn = connect();
+             ResultSet rs = conn.createStatement().executeQuery(sql)) {
+            return rs.next() ? rs.getString("hour") + ":00" : "N/A";
+        } catch (SQLException e) {
+            System.out.println("[DB Error] " + e.getMessage());
+            return "N/A";
+        }
     }
 }

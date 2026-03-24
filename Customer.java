@@ -3,9 +3,9 @@ public class Customer extends User {
     private Canteen canteen;
     private Reservation reservation;
 
-    public Customer(String uid, String fullName, String email, String pwd, String cusID, Canteen canteen) {
+    public Customer(String uid, String fullName, String email, String pwd, String customerID, Canteen canteen) {
         super(uid, fullName, email, pwd);
-        this.customerID = cusID;
+        this.customerID = customerID;
         this.canteen = canteen;
     }
 

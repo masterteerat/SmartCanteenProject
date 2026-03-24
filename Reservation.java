@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Reservation {
@@ -24,6 +25,13 @@ public class Reservation {
         String feedbackID = "FB" + System.currentTimeMillis();
         feedback = new Feedback(feedbackID, owner, score, comment, this);
         DatabaseManager.insertFeedback(reservationID, owner.getCustomerID(), score, comment);
+        return true;
+    }
+
+    public boolean addOccupant(Customer c) {
+        if (occupant == null) occupant = new ArrayList<>();
+        if (occupant.contains(c)) return false;
+        occupant.add(c);
         return true;
     }
 

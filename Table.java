@@ -1,3 +1,6 @@
+import java.time.LocalDate;
+import java.util.List;
+
 public class Table {
     private String tableID;
     private int capacity;
@@ -11,6 +14,10 @@ public class Table {
         this.canteen = canteen;
         this.status = Status.AVAILABLE;
     }
+    
+    public boolean checkAvailability() {
+        return status == Status.AVAILABLE;
+    }
 
     public boolean addReservation(Customer owner, String resID) {
         reservation = new Reservation(resID, owner, this);
@@ -19,8 +26,12 @@ public class Table {
         return true;
     }
 
-    public boolean checkAvailability() {
-        return status == Status.AVAILABLE;
+    public Double getTableAvgScore(LocalDate start, LocalDate end) {
+        return DatabaseManager.getSpecificTableAverageScore(start, end, this.tableID);
+    }
+
+    public List<String> getTableUsage(LocalDate start, LocalDate end) {
+        return DatabaseManager.getSpecificTableUsage(start, end, this.tableID);
     }
 
     public String getTableID() { return tableID; }

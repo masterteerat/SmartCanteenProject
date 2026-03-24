@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 public class Admin extends User {
     private String adminID;
     private Canteen canteen;
@@ -47,6 +49,14 @@ public class Admin extends User {
 
     public void viewAllFeedback() {
         DatabaseManager.printAllFeedbacks();
+    }
+
+    public Report makeReport() {
+        return canteen.makeReport(this);
+    }
+
+    public Report makeReport(LocalDate start, LocalDate end) {
+        return canteen.makeReport(this, start, end);
     }
 
     public String getAdminID() { return adminID; }

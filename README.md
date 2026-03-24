@@ -1,13 +1,31 @@
-Compile Java with Library
+## Compile Java with Library
+
+### Windows (PowerShell / CMD)
+
+```bash
+javac -cp ".;lib/*" *.java
+```
+
+Run program:
+
+```bash
+java -cp ".;lib/*" Tester
+```
+
+---
+
+### macOS / Linux
+
 ```bash
 javac -cp ".:lib/*" *.java
 ```
 
-Run Program On Tester
+Run program:
+
 ```bash
 java -cp ".:lib/*" Tester
 ```
 
-OR
+---
 
-Run on VS Code
+## Run in VS Code
