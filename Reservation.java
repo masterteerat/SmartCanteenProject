@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.crypto.Data;
-
 public class Reservation {
     private String reservationID;
     private Status status;

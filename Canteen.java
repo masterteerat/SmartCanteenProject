@@ -72,6 +72,9 @@ public class Canteen {
     }
 
     public Report makeReport(Admin admin, LocalDate start, LocalDate end) {
+        if (validateDate(start, end)) {
+            return null;
+        }
         Report r = new Report(admin, this, start, end);
         reportLog.add(r);
         return r; 
@@ -93,6 +96,10 @@ public class Canteen {
             }
         }
         return allUsage;
+    }
+
+    private boolean validateDate(LocalDate start, LocalDate end) {
+        return (start.isAfter(LocalDate.now()) || end.isAfter(LocalDate.now()));
     }
 
     public int getTotalReservations(LocalDate start, LocalDate end) {

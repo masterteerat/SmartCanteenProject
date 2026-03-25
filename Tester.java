@@ -6,7 +6,6 @@ public class Tester {
         System.out.println("========== 1. INITIALIZING SYSTEM ==========");
         Canteen kmitl = new Canteen("C01", "KMITL Smart Canteen");
 
-        // 🌟 ใช้ register ผ่าน Canteen (ถูกหลัก OOP และเอาลง DB ให้ด้วย)
         Admin admin = new Admin("U999", "Boss", "admin@mail.com", "pass123", "A001", kmitl);
         kmitl.registerAdmin(admin);
 
